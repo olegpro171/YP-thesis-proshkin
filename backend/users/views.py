@@ -16,9 +16,7 @@ from .serializers import (
     ShowFollowerSerializer,
     FollowerSerializer,
 )
-from .models import Follow
-
-User = get_user_model()
+from .models import Follow, User
 
 
 class CustomUserViewSet(viewsets.ModelViewSet):
@@ -28,13 +26,13 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         AllowAny,
     ]
     pagination_class = None
-
+ 
     @action(
         methods=["get"], detail=False, permission_classes=[IsAuthenticated]
     )
     def me(self, request, *args, **kwargs):
         user = get_object_or_404(User, pk=request.user.id)
-        serializer = CustomUserSerializer(user)
+        serializer = CustomUserSerializer(user, context={"request": request})
         return Response(serializer.data)
 
     def perform_create(self, serializer):

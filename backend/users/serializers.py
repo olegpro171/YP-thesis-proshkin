@@ -29,14 +29,14 @@ class CustomUserSerializer(djoser.serializers.UserSerializer):
             'username',
             'email',
             'id',
-            'first_name', # subcribed_to
+            'first_name',  # subcribed_to
             'last_name',
             'is_subscribed'
         )
         validators = [
             UniqueTogetherValidator(
                 queryset=User.objects.all(),
-                fields=('username', 'email')
+                fields=('username', 'email'),
             )
         ]
 
