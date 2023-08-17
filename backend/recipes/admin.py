@@ -1,31 +1,23 @@
 from django.contrib import admin
 from django.contrib.admin import register
 
-from django.contrib.admin import (
-    ModelAdmin,
-    TabularInline,
-    display,
-    register,
-    site,
-)
-
 from . import models
 
 
 @register(models.Tag)
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color', 'slug')
-    list_filter = ('name', 'color')
+    list_display = ('id', 'name', 'color', 'slug')
+    list_filter = ('id', 'name', 'color')
     search_fields = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
 
 
 @register(models.Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'measurement_unit')
-    list_filter = ('name',)
+    list_display = ('id', 'name', 'measurement_unit')
+    list_filter = ('id', 'name',)
     search_fields = ('name',)
-    ordering = ('name',)
+    ordering = ('id',)
 
 
 @register(models.TagToRecipe)
@@ -35,8 +27,8 @@ class TagToRecipeAdmin(admin.ModelAdmin):
     search_fields = ('tag', 'recipe')
 
 
-@register(models.IngredientToRecipe)
-class IngredientToRecipeAdmin(admin.ModelAdmin):
+@register(models.IngredientInRecipe)
+class IngredientInRecipeAdmin(admin.ModelAdmin):
     list_display = ('ingredient', 'recipe', 'amount')
     list_filter = ('ingredient', 'recipe')
     search_fields = ('ingredient', 'recipe')
@@ -53,12 +45,12 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 @register(models.Favorite)
-class FavoriteAdmin(ModelAdmin):
+class FavoriteAdmin(admin.ModelAdmin):
     list_display = ("user", "recipe", "date_added")
-    search_fields = ("user__username", "recipe__name")
+    search_fields = ("use", "recipe")
 
 
 @register(models.Cart)
-class CardAdmin(ModelAdmin):
+class CardAdmin(admin.ModelAdmin):
     list_display = ("user", "recipe", "date_added")
-    search_fields = ("user__username", "recipe__name")
+    search_fields = ("user", "recipe")

@@ -26,7 +26,7 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-        ordering = ['name']
+        ordering = ['id']
 
     def __str__(self):
         return self.name
@@ -95,7 +95,7 @@ class Recipe(models.Model):
     )
 
     ingredients = models.ManyToManyField(
-        Ingredient, through='IngredientToRecipe',
+        Ingredient, through='IngredientInRecipe',
         verbose_name='Ингридиенты',
         related_name='recipes'
     )
@@ -136,22 +136,28 @@ class TagToRecipe(models.Model):
     class Meta:
         verbose_name = 'Теги в рецептах'
         verbose_name_plural = verbose_name
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tag', 'recipe'],
+                name='unique_tag_recipe'
+            )
+        ]
+    
 
-
-class IngredientToRecipe(models.Model):
+class IngredientInRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='IngridientsToRecipes',
+        related_name='IngredientsToRecipes',
         verbose_name='Ингридиент',
     )
 
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE, verbose_name='рецепт',
-        related_name='IngridientsToRecipes'
+        related_name='IngredientsToRecipes'
     )
 
-    amount = models.PositiveIntegerField(
+    amount = models.IntegerField(
         verbose_name='Количество',
         default=1
     )

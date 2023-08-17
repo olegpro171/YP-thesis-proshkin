@@ -40,6 +40,10 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'recipes.apps.RecipesConfig',
     'users.apps.UsersConfig',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -53,6 +57,15 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'backend.urls'
+
+REST_FRAMEWORK = {
+   'DEFAULT_AUTHENTICATION_CLASSES': (
+       'rest_framework.authentication.TokenAuthentication',
+   ),
+   'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+   ),
+}
 
 TEMPLATES = [
     {
