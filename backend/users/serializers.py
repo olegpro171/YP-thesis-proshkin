@@ -5,7 +5,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.validators import UniqueValidator
 
 from . import models
-from .models import User
+from .models import User, Follow
 from recipes.models import Recipe
 
 
@@ -72,29 +72,31 @@ class PasswordSerializer(serializers.Serializer):
 
 
 class FollowerSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(
+    subscriber = serializers.PrimaryKeyRelatedField(
         queryset=models.User.objects.all()
     )
-    following = serializers.PrimaryKeyRelatedField(
+    subcribed_to = serializers.PrimaryKeyRelatedField(
         queryset=models.User.objects.all()
     )
 
     def validate(self, data):
-        user = data.get("user")
-        following = data.get("following")
-        if user == following:
-            raise serializers.ValidationError("На себя подписаться нельзя")
+        subscriber = data.get('subscriber')
+        subcribed_to = data.get('subcribed_to')
+        if subscriber == subcribed_to:
+            raise serializers.ValidationError('Self-following is not allowed')
+
+        if Follow.objects.filter(
+            subscriber=subscriber,
+            subcribed_to=subcribed_to
+        ).exists():
+            raise serializers.ValidationError('Subscription already exists')
+
         return data
 
     class Meta:
-        fields = ("user", "following")
         model = models.Follow
-        validators = [
-            UniqueTogetherValidator(
-                queryset=models.Follow.objects.all(),
-                fields=["user", "following"],
-            )
-        ]
+        fields = ("subscriber", "subcribed_to")
+        validators = []
 
 
 class ShowFollowerSerializer(serializers.ModelSerializer):
