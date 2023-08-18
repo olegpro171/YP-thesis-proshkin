@@ -109,16 +109,5 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             many=True,
             context={"current_user": user}
         )
-        
-        return paginator.get_paginated_response(serializer.data)
 
-        # user_obj = []
-        # for follow_obj in follow:
-        #     user_obj.append(follow_obj.subcribed_to)
-        # paginator = PageNumberPagination()
-        # paginator.page_size = 6
-        # result_page = paginator.paginate_queryset(user_obj, request)
-        # serializer = ShowFollowerSerializer(
-        #     result_page, many=True, context={"current_user": user}
-        # )
-        # return paginator.get_paginated_response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
