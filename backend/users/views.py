@@ -69,24 +69,24 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     )
     def subscribe(self, request, pk=None):
         user = request.user
-        following = get_object_or_404(User, pk=pk)
-        follow = Follow.objects.filter(user=user, following=following)
+        sub_to = get_object_or_404(User, pk=pk)
+        follow = Follow.objects.filter(subscriber=user, subcribed_to=sub_to)
         data = {
-            "user": user.id,
-            "following": following.id,
+            'subscriber': user.id,
+            'subcribed_to': sub_to.id,
         }
         if request.method == "GET" or request.method == "POST":
-            if follow.exists():
-                return Response(
-                    "Вы уже подписаны", status=status.HTTP_400_BAD_REQUEST
-                )
             serializer = FollowerSerializer(data=data, context=request)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         elif request.method == "DELETE":
-            follow.delete()
-            return Response("Удалено", status=status.HTTP_204_NO_CONTENT)
+            if follow.exists():
+                follow.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
     @action(
         methods=["get", "post"],
@@ -95,14 +95,30 @@ class CustomUserViewSet(viewsets.ModelViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        follow = Follow.objects.filter(user=user)
-        user_obj = []
-        for follow_obj in follow:
-            user_obj.append(follow_obj.following)
+        follow = Follow.objects.filter(subscriber=user)
+
+        subscribed_to_users = follow.values_list('subcribed_to', flat=True)
+        subscribed_users = User.objects.filter(pk__in=subscribed_to_users)
+
         paginator = PageNumberPagination()
         paginator.page_size = 6
-        result_page = paginator.paginate_queryset(user_obj, request)
+
+        result_page = paginator.paginate_queryset(subscribed_users, request)
         serializer = ShowFollowerSerializer(
-            result_page, many=True, context={"current_user": user}
+            result_page,
+            many=True,
+            context={"current_user": user}
         )
+        
         return paginator.get_paginated_response(serializer.data)
+
+        # user_obj = []
+        # for follow_obj in follow:
+        #     user_obj.append(follow_obj.subcribed_to)
+        # paginator = PageNumberPagination()
+        # paginator.page_size = 6
+        # result_page = paginator.paginate_queryset(user_obj, request)
+        # serializer = ShowFollowerSerializer(
+        #     result_page, many=True, context={"current_user": user}
+        # )
+        # return paginator.get_paginated_response(serializer.data)
