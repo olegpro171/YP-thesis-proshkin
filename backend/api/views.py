@@ -2,17 +2,16 @@ import io
 
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
-from rest_framework.permissions import (AllowAny,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, action
 from rest_framework.views import APIView
 
-from recipes import models
 from . import serializers
 from .filter import RecipeFilter
+from recipes import models
 
 
 class TagView(viewsets.ModelViewSet):
@@ -22,7 +21,7 @@ class TagView(viewsets.ModelViewSet):
     pagination_class = None
 
 
-class IngredientsView(viewsets.ModelViewSet):
+class IngredientView(viewsets.ModelViewSet):
     queryset = models.Ingredient.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly, ]
     serializer_class = serializers.IngredientSerializer
@@ -40,7 +39,7 @@ class RecipeView(viewsets.ModelViewSet):
         method = self.request.method
         if method == "POST" or method == "PATCH":
             return serializers.CreateRecipeSerializer
-        return serializers.ShowRecipeSerializer
+        return serializers.GetRecipeSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
@@ -53,10 +52,12 @@ class RecipeView(viewsets.ModelViewSet):
                                          data=request.data,
                                          partial=False)
 
-        if serializer.is_valid():
-            self.perform_update(serializer)
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
 
 class FavoriteView(APIView):
@@ -69,13 +70,6 @@ class FavoriteView(APIView):
             "user": user.id,
             "recipe": recipe_id,
         }
-        # if models.Favorite.objects.filter(
-        #     user=user, recipe__id=recipe_id
-        # ).exists():
-        #     return Response(
-        #         {"Ошибка": "Уже в избранном"},
-        #         status=status.HTTP_400_BAD_REQUEST,
-        #     )
         serializer = serializers.FavoriteSerializer(
             data=data, context={"request": request, 'recipe_id': recipe_id}
         )
@@ -125,35 +119,36 @@ class ShoppingCartViewSet(APIView):
 
 
 @api_view(["GET"])
-def download_shopping_cart(request):
+def shopping_cart_view(request):
     user = request.user
-    shopping_cart = user.cart.all()
-    buying_list = {}
+    all_carts = user.cart.all()
 
-    for record in shopping_cart:
+    ingredients_list = {}
+
+    for cart_item in all_carts:
         ingredients = models.IngredientInRecipe.objects.filter(
-            recipe=record.recipe
+            recipe=cart_item.recipe
         )
 
         for ingredient in ingredients:
-            name = ingredient.ingredient.name
+            key = ingredient.ingredient.name
             amount = ingredient.amount
             measurement_unit = ingredient.ingredient.measurement_unit
 
-            if name not in buying_list:
-                buying_list[name] = {
-                    "measurement_unit": measurement_unit,
-                    "amount": amount,
+            try:
+                ingredients_list[key]["amount"] += amount
+            except KeyError:
+                ingredients_list[key] = {
+                    "M_U": measurement_unit,
+                    "amt": amount,
                 }
-            else:
-                buying_list[name]["amount"] += amount
 
-    to_buy = []
+    file_strings = []
 
-    for name, data in buying_list.items():
-        to_buy.append(f"{name} - {data['amount']} {data['measurement_unit']}")
+    for key, data in ingredients_list.items():
+        file_strings.append(f"{key} - {data['amt']} {data['M_U']}")
 
-    file_content = "\n".join(to_buy).encode("utf-8")
+    file_content = "\n".join(file_strings).encode("utf-8")
     file_name = "shopping_cart.txt"
     text_file = io.BytesIO(file_content)
     text_file.seek(0)
