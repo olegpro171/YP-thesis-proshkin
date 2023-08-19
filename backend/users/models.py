@@ -7,11 +7,6 @@ import backend.constant_values as constant_values
 
 
 class User(AbstractUser):
-    # username = models.CharField(
-    #     max_length=constant_values.USER_USERNAME_MAX_LENGTH,
-    #     unique=True,
-    #     verbose_name='Имя пользователя'
-    # )
     first_name = models.CharField(
         max_length=constant_values.USER_FIRST_NAME_MAX_LENGTH,
         verbose_name='Имя'
@@ -20,11 +15,6 @@ class User(AbstractUser):
         max_length=constant_values.USER_LAST_NAME_MAX_LENGTH,
         verbose_name='Фамилия'
     )
-    # email = models.EmailField(
-    #     max_length=constant_values.USER_EMAIL_MAX_LENGTH,
-    #     unique=True,
-    #     verbose_name='Электронная почта'
-    # )
 
     class Meta:
         verbose_name = 'Пользователь'

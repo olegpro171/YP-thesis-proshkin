@@ -43,24 +43,24 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
 #         fields = ("id", "name", "measurement_unit", "amount")
 
 
-class RecipeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = '__all__'
+# class RecipeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Recipe    
+#         fields = '__all__'
 
-    def get_ingredients(self, recipe):
-        ingredients = recipe.ingredients.values(
-            "id", "name", "measurement_unit", amount=F("recipe__amount")
-        )
-        return ingredients
+#     def get_ingredients(self, recipe):
+#         ingredients = recipe.ingredients.values(
+#             "id", "name", "measurement_unit", amount=F("recipe__amount")
+#         )
+#         return ingredients
 
-    def is_favorited(self, recipe):
-        user = self.context.get("view").request.user
+#     def is_favorited(self, recipe):
+#         user = self.context.get("view").request.user
 
-        if user.is_anonymous:
-            return False
+#         if user.is_anonymous:
+#             return False
 
-        return user.favorites.filter(recipe=recipe).exists()
+#         return user.favorites.filter(recipe=recipe).exists()
 
 
 # class RecipeReadSerializer(serializers.ModelSerializer):
@@ -183,7 +183,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
     def validate_cooking_time(self, data):
         if data <= 0:
-            raise serializers.ValidationError("Введите число больше 0")
+            raise serializers.ValidationError('Invalid cooking time')
+        return data
+    
+    def validate(self, data):
+        user = self.context.get('request').user
+        if user.recipes.filter(text=data['text']).exists():
+            raise serializers.ValidationError('Recipe already exists')
         return data
 
     def create(self, validated_data):
