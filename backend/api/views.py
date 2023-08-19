@@ -55,45 +55,35 @@ class RecipeView(viewsets.ModelViewSet):
 class FavoriteView(APIView):
     permissions = [IsAuthenticatedOrReadOnly, ]
 
-    @action(
-        methods=[
-            "post",
-        ],
-        detail=True,
-    )
+    @action(methods=["post"], detail=True)
     def post(self, request, recipe_id):
         user = request.user
         data = {
             "user": user.id,
             "recipe": recipe_id,
         }
-        if models.Favorite.objects.filter(
-            user=user, recipe__id=recipe_id
-        ).exists():
-            return Response(
-                {"Ошибка": "Уже в избранном"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # if models.Favorite.objects.filter(
+        #     user=user, recipe__id=recipe_id
+        # ).exists():
+        #     return Response(
+        #         {"Ошибка": "Уже в избранном"},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
         serializer = serializers.FavoriteSerializer(
-            data=data, context={"request": request}
+            data=data, context={"request": request, 'recipe_id': recipe_id}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(
-        methods=[
-            "DELETE",
-        ],
-        detail=True,
-    )
+    @action(methods=["DELETE"], detail=True)
     def delete(self, request, recipe_id):
         user = request.user
         recipe = get_object_or_404(models.Recipe, id=recipe_id)
-        if not models.Favorite.objects.filter(
-            user=user, recipe=recipe
-        ).exists():
+        if not models.Favorite.objects.filter(user=user,
+                                              recipe=recipe).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        
         models.Favorite.objects.get(user=user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -148,9 +138,6 @@ class ShoppingCartViewSet(APIView):
 
 @api_view(["GET"])
 def download_shopping_cart(request):
-    """Формирует текстовый файл со списком покупок ингредиентов
-    для приготовления рецептов из ShoppingCart"""
-
     user = request.user
     shopping_cart = user.shopping_cart.all()
     buying_list = {}
