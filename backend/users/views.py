@@ -1,4 +1,3 @@
-from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, viewsets
@@ -22,11 +21,9 @@ from .models import Follow, User
 class CustomUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = [
-        AllowAny,
-    ]
+    permission_classes = [AllowAny]
     pagination_class = None
- 
+
     @action(
         methods=["get"], detail=False, permission_classes=[IsAuthenticated]
     )

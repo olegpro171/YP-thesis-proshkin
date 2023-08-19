@@ -104,6 +104,16 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             "text",
             "cooking_time",
         ]
+        required_fields = [
+            "id",
+            "tags",
+            "author",
+            "ingredients",
+            "name",
+            "image",
+            "text",
+            "cooking_time",
+        ]
 
     def validate_cooking_time(self, data):
         if data <= 0:
@@ -112,13 +122,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     
     def validate(self, data):
         user = self.context.get('request').user
-        if user.recipes.filter(text=data['text']).exists():
+        if user.recipes.filter(text=data.get('text')).exists():
             raise serializers.ValidationError('Recipe already exists')
         return data
 
     def create(self, validated_data):
-        ingredients_data = validated_data.pop("ingredients")
-        tags_data = validated_data.pop("tags")
+        ingredients_data = validated_data.get("ingredients")
+        tags_data = validated_data.get("tags")
         author = self.context.get("request").user
         recipe = models.Recipe.objects.create(author=author, **validated_data)
         for ingredient in ingredients_data:
@@ -131,9 +141,12 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, instance, validated_data):
-        ingredients_data = validated_data.pop("ingredients")
-        tags_data = validated_data.pop("tags")
+        ingredients_data = validated_data.get("ingredients")
+        tags_data = validated_data.get("tags")
         models.TagToRecipe.objects.filter(recipe=instance).delete()
+
+        if not ingredients_data:
+            raise serializers.ValidationError('No ingredients provided')
         models.IngredientInRecipe.objects.filter(recipe=instance).delete()
         for ingredient in ingredients_data:
             ingredient_model = ingredient["id"]
@@ -141,11 +154,11 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             models.IngredientInRecipe.objects.create(
                 ingredient=ingredient_model, recipe=instance, amount=amount
             )
-        instance.name = validated_data.pop("name")
-        instance.text = validated_data.pop("text")
+        instance.name = validated_data.get("name")
+        instance.text = validated_data.get("text")
         if validated_data.get("image") is not None:
-            instance.image = validated_data.pop("image")
-        instance.cooking_time = validated_data.pop("cooking_time")
+            instance.image = validated_data.get("image")
+        instance.cooking_time = validated_data.get("cooking_time")
         instance.tags.set(tags_data)
         instance.save()
         return instance
