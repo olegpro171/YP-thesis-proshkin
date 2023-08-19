@@ -7,7 +7,7 @@ from .views import (FavoriteView,
                     ShoppingCartViewSet,
                     TagView,
                     shopping_cart_view)
-from users.views import CustomUserViewSet
+from users.views import UserViewSet
 
 app_name = 'api'
 
@@ -15,7 +15,7 @@ router_v1 = DefaultRouter()
 router_v1.register('tags', TagView, basename='tags')
 router_v1.register('ingredients', IngredientView, basename='ingredients')
 router_v1.register('recipes', RecipeView, basename='recipes')
-router_v1.register(r'users', CustomUserViewSet)
+router_v1.register(r'users', UserViewSet)
 
 
 urlpatterns = [

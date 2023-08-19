@@ -28,7 +28,7 @@ class CustomUserSerializer(djoser.serializers.UserSerializer):
             'username',
             'email',
             'id',
-            'first_name',  # subcribed_to
+            'first_name',
             'last_name',
             'is_subscribed'
         )
@@ -70,7 +70,7 @@ class PasswordSerializer(serializers.Serializer):
         fields = "__all__"
 
 
-class FollowerSerializer(serializers.ModelSerializer):
+class FollowSerializer(serializers.ModelSerializer):
     subscriber = serializers.PrimaryKeyRelatedField(
         queryset=models.User.objects.all()
     )
@@ -98,7 +98,7 @@ class FollowerSerializer(serializers.ModelSerializer):
         validators = []
 
 
-class ShowFollowerSerializer(serializers.ModelSerializer):
+class FollowerSerializer(serializers.ModelSerializer):
     recipes = SpecialRecipeSerializer(many=True, required=True)
     is_subscribed = serializers.SerializerMethodField("is_subscribed_to")
     recipes_count = serializers.SerializerMethodField("get_recipes_count")

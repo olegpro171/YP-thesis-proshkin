@@ -12,13 +12,13 @@ from rest_framework.response import Response
 from .serializers import (
     CustomUserSerializer,
     PasswordSerializer,
-    ShowFollowerSerializer,
     FollowerSerializer,
+    FollowSerializer,
 )
 from .models import Follow, User
 
 
-class CustomUserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
     permission_classes = [AllowAny]
@@ -62,7 +62,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
 
         user.set_password(serializer.validated_data["new_password"])
         user.save()
-        return Response(status=status.HTTP_200_OK)      
+        return Response(status=status.HTTP_200_OK)
 
     @action(methods=["get", "delete", "post"],
             detail=True,
@@ -76,7 +76,7 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             'subcribed_to': sub_to.id,
         }
         if request.method == "GET" or request.method == "POST":
-            serializer = FollowerSerializer(data=data, context=request)
+            serializer = FollowSerializer(data=data, context=request)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -88,23 +88,20 @@ class CustomUserViewSet(viewsets.ModelViewSet):
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
-    @action(
-        methods=["get", "post"],
-        detail=False,
-        permission_classes=[IsAuthenticated],
-    )
+    @action(methods=["get", "post"], detail=False,
+            permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
-        follow = Follow.objects.filter(subscriber=user)
+        follows = Follow.objects.filter(subscriber=user)
 
-        subscribed_to_users = follow.values_list('subcribed_to', flat=True)
+        subscribed_to_users = follows.values_list('subcribed_to', flat=True)
         subscribed_users = User.objects.filter(pk__in=subscribed_to_users)
 
         paginator = PageNumberPagination()
         paginator.page_size = 6
 
         result_page = paginator.paginate_queryset(subscribed_users, request)
-        serializer = ShowFollowerSerializer(
+        serializer = FollowerSerializer(
             result_page,
             many=True,
             context={"current_user": user}

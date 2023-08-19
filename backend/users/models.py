@@ -39,12 +39,6 @@ class Follow(models.Model):
         on_delete=models.CASCADE,
     )
 
-    datetime = models.DateTimeField(
-        auto_now_add=True,
-        editable=False,
-        verbose_name='Дата подписки',
-    )
-
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
