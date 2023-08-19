@@ -25,8 +25,6 @@ class User(AbstractUser):
 
 
 class Follow(models.Model):
-    """Модель подписки."""
-
     subscriber = models.ForeignKey(
         User,
         related_name='following',
