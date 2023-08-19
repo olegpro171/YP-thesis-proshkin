@@ -24,6 +24,10 @@ class Command(BaseCommand):
                 )
 
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f'Created: {ingredient.name}'))
+                    self.stdout.write(self.style.SUCCESS(
+                        f'Created: {ingredient.name}')
+                    )
                 else:
-                    self.stdout.write(self.style.SUCCESS(f'Already exists: {ingredient.name}'))
+                    self.stdout.write(self.style.SUCCESS(
+                        f'Already exists: {ingredient.name}')
+                    )
