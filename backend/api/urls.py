@@ -1,7 +1,8 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import IngredientsView, RecipeView, TagView, FavoriteView
+from .views import (IngredientsView, RecipeView, TagView, FavoriteView,
+                    ShoppingCartViewSet, download_shopping_cart)
 from users.views import CustomUserViewSet
 
 app_name = 'api'
@@ -14,11 +15,18 @@ router_v1.register(r'users', CustomUserViewSet)
 
 
 urlpatterns = [
+    path('auth/', include('djoser.urls.authtoken')),
+
+    path("recipes/download_shopping_cart/",
+         download_shopping_cart,
+         name="download"),
+
+    path("recipes/<int:recipe_id>/favorite/",
+         FavoriteView.as_view()),
+
+    path("recipes/<int:recipe_id>/shopping_cart/",
+         ShoppingCartViewSet.as_view()),
+
     path('', include(router_v1.urls)),
     path('', include('djoser.urls')),
-    path('auth/', include('djoser.urls.authtoken')),
-    path(
-        "recipes/<int:recipe_id>/favorite/",
-        FavoriteView.as_view(),
-    ),
 ]

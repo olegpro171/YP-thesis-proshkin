@@ -142,7 +142,7 @@ class TagToRecipe(models.Model):
                 name='unique_tag_recipe'
             )
         ]
-    
+
 
 class IngredientInRecipe(models.Model):
     ingredient = models.ForeignKey(

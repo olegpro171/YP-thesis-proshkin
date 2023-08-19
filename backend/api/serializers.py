@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework.validators import UniqueTogetherValidator
 
 from users.serializers import CustomUserSerializer
 import recipes.models as models
@@ -108,12 +109,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Invalid cooking time')
         return data
 
-    # def validate(self, data):
-    #     user = self.context.get('request').user
-    #     if user.recipes.filter(text=data.get('text')).exists():
-    #         raise serializers.ValidationError('Recipe already exists')
-    #     return data
-
     def validate(self, data):
         user = self.context.get('request').user
         text = data.get('text')
@@ -190,3 +185,15 @@ class FavoriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Recipe already in favorites')
 
         return super().validate(attrs)
+
+
+class ShoppingCartSerializer(FavoriteSerializer):
+    class Meta:
+        model = models.Cart
+        fields = ["recipe", "user"]
+        validators = [
+            UniqueTogetherValidator(
+                queryset=models.Cart.objects.all(),
+                fields=["user", "recipe"],
+            )
+        ]
