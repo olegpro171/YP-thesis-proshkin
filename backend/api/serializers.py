@@ -1,6 +1,4 @@
-from django.db.models import F, Q
 from rest_framework import serializers
-from recipes.models import Recipe
 from drf_extra_fields.fields import Base64ImageField
 
 from users.serializers import CustomUserSerializer
@@ -104,39 +102,47 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             "text",
             "cooking_time",
         ]
-        required_fields = [
-            "id",
-            "tags",
-            "author",
-            "ingredients",
-            "name",
-            "image",
-            "text",
-            "cooking_time",
-        ]
 
     def validate_cooking_time(self, data):
         if data <= 0:
             raise serializers.ValidationError('Invalid cooking time')
         return data
-    
+
+    # def validate(self, data):
+    #     user = self.context.get('request').user
+    #     if user.recipes.filter(text=data.get('text')).exists():
+    #         raise serializers.ValidationError('Recipe already exists')
+    #     return data
+
     def validate(self, data):
         user = self.context.get('request').user
-        if user.recipes.filter(text=data.get('text')).exists():
+        text = data.get('text')
+
+        # Exclude current instance if it exists
+        if self.instance:
+            existing_recipes = user.recipes.filter(
+                text=text).exclude(pk=self.instance.pk)
+        else:
+            existing_recipes = user.recipes.filter(text=text)
+
+        if existing_recipes.exists():
             raise serializers.ValidationError('Recipe already exists')
+
         return data
 
     def create(self, validated_data):
-        ingredients_data = validated_data.get("ingredients")
-        tags_data = validated_data.get("tags")
+        ingredients_data = validated_data.pop("ingredients")
+        tags_data = validated_data.pop("tags")
         author = self.context.get("request").user
         recipe = models.Recipe.objects.create(author=author, **validated_data)
+
         for ingredient in ingredients_data:
-            ingredient_model = ingredient["id"]
-            amount = ingredient["amount"]
+            ingredient_model = ingredient.get("id")
+            amount = ingredient.get("amount")
             models.IngredientInRecipe.objects.create(
                 ingredient=ingredient_model, recipe=recipe, amount=amount
             )
+
         recipe.tags.set(tags_data)
         return recipe
 
@@ -184,4 +190,3 @@ class FavoriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Recipe already in favorites')
 
         return super().validate(attrs)
-
