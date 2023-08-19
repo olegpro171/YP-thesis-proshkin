@@ -3,14 +3,6 @@ from recipes.models import Ingredient, Recipe, Tag
 from rest_framework.filters import SearchFilter
 
 
-class IngredientFilter(SearchFilter):
-    search_param = 'name'
-
-    class Meta:
-        model = Ingredient
-        fields = ('name',)
-
-
 class RecipeFilter(FilterSet):
     tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
