@@ -49,24 +49,27 @@ class CustomUserViewSet(viewsets.ModelViewSet):
         else:
             serializer.save()
 
-    @action(["post"], detail=False)
+    @action(["post"], detail=False, permission_classes=[IsAuthenticated])
     def set_password(self, request, *args, **kwargs):
         user = self.request.user
         serializer = PasswordSerializer(data=request.data)
-        if serializer.is_valid():
-            user.set_password(serializer.validated_data["new_password"])
-            user.save()
-            return Response({"status": "password set"})
-        else:
-            return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
 
-    @action(
-        methods=["get", "delete", "post"],
-        detail=True,
-        permission_classes=[IsAuthenticated],
-    )
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if not user.check_password(
+                serializer.validated_data['current_password']):
+            return Response({'message': 'Current password is incorrect.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        user.set_password(serializer.validated_data["new_password"])
+        user.save()
+        return Response(status=status.HTTP_200_OK)      
+
+    @action(methods=["get", "delete", "post"],
+            detail=True,
+            permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
         user = request.user
         sub_to = get_object_or_404(User, pk=pk)
