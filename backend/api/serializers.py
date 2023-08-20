@@ -13,7 +13,6 @@ from recipes.models import (Tag,
                             Recipe,
                             Favorite,
                             Cart,
-                            TagToRecipe,
                             User)
 from users.serializers import CustomUserSerializer
 

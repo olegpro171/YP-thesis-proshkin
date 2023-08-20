@@ -38,7 +38,7 @@ class IngredientInRecipeAdmin(admin.ModelAdmin):
 class IngredientInRecipeInline(admin.TabularInline):
     model = models.IngredientInRecipe
     extra = 1
-    min_num = 1  
+    min_num = 1
 
 
 @register(models.Recipe)
