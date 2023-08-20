@@ -25,46 +25,44 @@ class UserViewSet(viewsets.ModelViewSet):
     pagination_class = None
 
     @action(
-        methods=["get"], detail=False, permission_classes=[IsAuthenticated]
+        methods=['get'], detail=False, permission_classes=[IsAuthenticated]
     )
     def me(self, request, *args, **kwargs):
         user = get_object_or_404(User, pk=request.user.id)
-        serializer = CustomUserSerializer(user, context={"request": request})
+        serializer = CustomUserSerializer(user, context={'request': request})
         return Response(serializer.data)
 
     def perform_create(self, serializer):
-        if "password" in self.request.data:
-            password = make_password(self.request.data["password"])
+        if 'password' in self.request.data:
+            password = make_password(self.request.data['password'])
             serializer.save(password=password)
         else:
             serializer.save()
 
     def perform_update(self, serializer):
-        if "password" in self.request.data:
-            password = make_password(self.request.data["password"])
+        if 'password' in self.request.data:
+            password = make_password(self.request.data['password'])
             serializer.save(password=password)
         else:
             serializer.save()
 
-    @action(["post"], detail=False, permission_classes=[IsAuthenticated])
+    @action(['post'], detail=False, permission_classes=[IsAuthenticated])
     def set_password(self, request, *args, **kwargs):
         user = self.request.user
         serializer = PasswordSerializer(data=request.data)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         if not user.check_password(
                 serializer.validated_data['current_password']):
             return Response({'message': 'Current password is incorrect.'},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        user.set_password(serializer.validated_data["new_password"])
+        user.set_password(serializer.validated_data['new_password'])
         user.save()
         return Response(status=status.HTTP_200_OK)
 
-    @action(methods=["get", "delete", "post"],
+    @action(methods=['get', 'delete', 'post'],
             detail=True,
             permission_classes=[IsAuthenticated])
     def subscribe(self, request, pk=None):
@@ -75,24 +73,24 @@ class UserViewSet(viewsets.ModelViewSet):
             'subscriber': user.id,
             'subcribed_to': sub_to.id,
         }
-        if request.method == "GET" or request.method == "POST":
+        if request.method == 'GET' or request.method == 'POST':
             serializer = FollowSerializer(data=data, context=request)
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        elif request.method == "DELETE":
+        if request.method == 'DELETE':
             if follow.exists():
                 follow.delete()
                 return Response(status=status.HTTP_204_NO_CONTENT)
-            else:
-                return Response(status=status.HTTP_404_NOT_FOUND)
 
-    @action(methods=["get", "post"], detail=False,
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get', 'post'], detail=False,
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
-        follows = Follow.objects.filter(subscriber=user)
+        follows = user.following.all()
 
         subscribed_to_users = follows.values_list('subcribed_to', flat=True)
         subscribed_users = User.objects.filter(pk__in=subscribed_to_users)
@@ -104,7 +102,7 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer = FollowerSerializer(
             result_page,
             many=True,
-            context={"current_user": user}
+            context={'current_user': user}
         )
 
         return paginator.get_paginated_response(serializer.data)

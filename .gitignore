@@ -133,4 +133,6 @@ dmypy.json
 
 # images
 image/
+.vscode
 .vscode/
+launch.json

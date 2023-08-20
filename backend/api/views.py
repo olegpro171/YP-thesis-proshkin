@@ -11,39 +11,44 @@ from rest_framework.views import APIView
 
 from . import serializers
 from .filter import RecipeFilter
-from recipes import models
+from recipes.models import (Tag,
+                            Recipe,
+                            Ingredient,
+                            IngredientInRecipe,
+                            Favorite,
+                            Cart,)
 
 
 class TagView(viewsets.ModelViewSet):
-    queryset = models.Tag.objects.all()
+    queryset = Tag.objects.all()
     serializer_class = serializers.TagSerializer
     permissions = [AllowAny, ]
     pagination_class = None
 
 
 class IngredientView(viewsets.ModelViewSet):
-    queryset = models.Ingredient.objects.all()
+    queryset = Ingredient.objects.all()
     permission_classes = [IsAuthenticatedOrReadOnly, ]
     serializer_class = serializers.IngredientSerializer
-    search_fields = ["name", ]
+    search_fields = ['name', ]
     pagination_class = None
 
 
 class RecipeView(viewsets.ModelViewSet):
-    queryset = models.Recipe.objects.all()
+    queryset = Recipe.objects.all()
     permissions = [IsAuthenticatedOrReadOnly, ]
     filter_class = RecipeFilter
     pagination_class = PageNumberPagination
 
     def get_serializer_class(self):
         method = self.request.method
-        if method == "POST" or method == "PATCH":
+        if method == 'POST' or method == 'PATCH':
             return serializers.CreateRecipeSerializer
         return serializers.GetRecipeSerializer
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
-        context.update({"request": self.request})
+        context.update({'request': self.request})
         return context
 
     def update(self, request, *args, **kwargs):
@@ -52,9 +57,7 @@ class RecipeView(viewsets.ModelViewSet):
                                          data=request.data,
                                          partial=False)
 
-        if not serializer.is_valid():
-            return Response(serializer.errors,
-                            status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
 
         self.perform_update(serializer)
         return Response(serializer.data)
@@ -63,29 +66,28 @@ class RecipeView(viewsets.ModelViewSet):
 class FavoriteView(APIView):
     permissions = [IsAuthenticatedOrReadOnly, ]
 
-    @action(methods=["post"], detail=True)
+    @action(methods=['post'], detail=True)
     def post(self, request, recipe_id):
         user = request.user
         data = {
-            "user": user.id,
-            "recipe": recipe_id,
+            'user': user.id,
+            'recipe': recipe_id,
         }
         serializer = serializers.FavoriteSerializer(
-            data=data, context={"request": request, 'recipe_id': recipe_id}
+            data=data, context={'request': request, 'recipe_id': recipe_id}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(methods=["DELETE"], detail=True)
+    @action(methods=['DELETE'], detail=True)
     def delete(self, request, recipe_id):
         user = request.user
-        recipe = get_object_or_404(models.Recipe, id=recipe_id)
-        if not models.Favorite.objects.filter(user=user,
-                                              recipe=recipe).exists():
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if not user.favorites.filter(recipe=recipe).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        models.Favorite.objects.get(user=user, recipe=recipe).delete()
+        Favorite.objects.get(user=user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -94,31 +96,29 @@ class ShoppingCartViewSet(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly, ]
     pagination_class = None
 
-    @action(methods=["post"], detail=True)
+    @action(methods=['post'], detail=True)
     def post(self, request, recipe_id):
         user = request.user
-        data = {"user": user.id, "recipe": recipe_id}
+        data = {'user': user.id, 'recipe': recipe_id}
         serializer = serializers.ShoppingCartSerializer(
             data=data,
-            context={"request": request}
+            context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(method=("delete",), detail=True)
+    @action(method=('delete',), detail=True)
     def delete(self, request, recipe_id):
         user = request.user
-        recipe = get_object_or_404(models.Recipe, id=recipe_id)
-        if not models.Cart.objects.filter(
-            user=user, recipe=recipe
-        ).exists():
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if not user.cart.filter(recipe=recipe).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        models.Cart.objects.get(user=user, recipe=recipe).delete()
+        Cart.objects.get(user=user, recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(["GET"])
+@api_view(['GET'])
 def shopping_cart_view(request):
     user = request.user
     all_carts = user.cart.all()
@@ -126,7 +126,7 @@ def shopping_cart_view(request):
     ingredients_list = {}
 
     for cart_item in all_carts:
-        ingredients = models.IngredientInRecipe.objects.filter(
+        ingredients = IngredientInRecipe.objects.filter(
             recipe=cart_item.recipe
         )
 
@@ -136,11 +136,11 @@ def shopping_cart_view(request):
             measurement_unit = ingredient.ingredient.measurement_unit
 
             try:
-                ingredients_list[key]["amount"] += amount
+                ingredients_list[key]['amount'] += amount
             except KeyError:
                 ingredients_list[key] = {
-                    "M_U": measurement_unit,
-                    "amt": amount,
+                    'M_U': measurement_unit,
+                    'amt': amount,
                 }
 
     file_strings = []
@@ -148,11 +148,11 @@ def shopping_cart_view(request):
     for key, data in ingredients_list.items():
         file_strings.append(f"{key} - {data['amt']} {data['M_U']}")
 
-    file_content = "\n".join(file_strings).encode("utf-8")
-    file_name = "shopping_cart.txt"
+    file_content = '\n'.join(file_strings).encode('utf-8')
+    file_name = 'shopping_cart.txt'
     text_file = io.BytesIO(file_content)
     text_file.seek(0)
 
-    response = FileResponse(text_file, content_type="text/plain")
-    response["Content-Disposition"] = f'attachment; filename="{file_name}"'
+    response = FileResponse(text_file, content_type='text/plain')
+    response['Content-Disposition'] = f"attachment; filename='{file_name}'"
     return response

@@ -45,10 +45,10 @@ class Follow(models.Model):
         constraints = (
             models.UniqueConstraint(
                 fields=(
-                    "subscriber",
-                    "subcribed_to",
+                    'subscriber',
+                    'subcribed_to',
                 ),
-                name="unique_follow",
+                name='unique_follow',
             ),
             models.CheckConstraint(
                 check=~Q(subscriber=F('subcribed_to')),

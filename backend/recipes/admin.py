@@ -35,6 +35,12 @@ class IngredientInRecipeAdmin(admin.ModelAdmin):
     list_per_page = 20
 
 
+class IngredientInRecipeInline(admin.TabularInline):
+    model = models.IngredientInRecipe
+    extra = 1
+    min_num = 1  
+
+
 @register(models.Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('name', 'cooking_time', 'author', 'pub_date')
@@ -43,14 +49,16 @@ class RecipeAdmin(admin.ModelAdmin):
     date_hierarchy = 'pub_date'
     filter_horizontal = ('tags', 'ingredients')
 
+    inlines = (IngredientInRecipeInline,)
+
 
 @register(models.Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
-    list_display = ("user", "recipe", "date_added")
-    search_fields = ("use", "recipe")
+    list_display = ('user', 'recipe', 'date_added')
+    search_fields = ('use', 'recipe')
 
 
 @register(models.Cart)
 class CardAdmin(admin.ModelAdmin):
-    list_display = ("user", "recipe", "date_added")
-    search_fields = ("user", "recipe")
+    list_display = ('user', 'recipe', 'date_added')
+    search_fields = ('user', 'recipe')
