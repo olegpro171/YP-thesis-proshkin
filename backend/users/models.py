@@ -16,6 +16,14 @@ class User(AbstractUser):
         verbose_name='Фамилия'
     )
 
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        verbose_name='Имя пользователя',
+    )
+
+    email = models.EmailField('Почта', unique=True, max_length=150)
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
