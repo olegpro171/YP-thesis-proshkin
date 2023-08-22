@@ -1,0 +1,1 @@
+docker compose exec backend python manage.py create_ingredients /app/data/ingredients.csv

@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 
 from . import serializers
 from .filter import RecipeFilter
+from .pagination import CustomPagination
 from recipes.models import (Tag,
                             Recipe,
                             Ingredient,
@@ -38,7 +39,7 @@ class RecipeView(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permissions = [IsAuthenticatedOrReadOnly, ]
     filter_class = RecipeFilter
-    pagination_class = PageNumberPagination
+    pagination_class = CustomPagination
 
     def get_serializer_class(self):
         method = self.request.method
