@@ -21,7 +21,7 @@ services:
       - static:/backend/static/
 
   frontend:
-    image: olegpro171/foodgram_backend:latest
+    image: olegpro171/foodgram_frontend:latest
     volumes:
       - ../frontend/:/app/result_build/
 
