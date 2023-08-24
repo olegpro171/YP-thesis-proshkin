@@ -28,7 +28,9 @@ services:
   nginx:
     depends_on:
       - backend
-    image: olegpro171/foodgram_gateway:latest
+      - frontend
+      - db
+    image: nginx:1.19.3
     ports:
       - "8080:80"
     volumes:
@@ -37,4 +39,3 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/static/
       - media:/media/
-
