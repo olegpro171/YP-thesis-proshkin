@@ -1,24 +1,23 @@
 server {
     listen 80;
+
     location /api/docs/ {
         root /usr/share/nginx/html;
-        try_files $uri $uri/redoc.html;
-    }
-
-    location /media/ {
-        root /var/html/;
+        try_files $uri $uri/ =404;
     }
 
     location /static/admin/ {
-        autoindex on;
-        root /var/html/;
+      alias /static/admin/;
     }
 
-    location /static/rest_framework/ {
-        autoindex on;
-        root /var/html/;
+    location /static/ {
+        alias /usr/share/nginx/html/static/; 
     }
-    
+
+    location /media/ {
+        alias /media/;
+    }
+
     location /api/ {
         proxy_set_header    Host $host;
         proxy_set_header    X-Forwarded-Host $host;
@@ -27,7 +26,11 @@ server {
     }
 
     location /admin/ {
-        proxy_pass http://backend:8000/admin/;
+        proxy_pass http://backend:8000;
+    }
+
+    location /static/rest_framework/ {
+        alias /static/rest_framework/;
     }
 
     location / {
@@ -38,10 +41,10 @@ server {
         proxy_set_header        X-Real-IP $remote_addr;
         proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header        X-Forwarded-Proto $scheme;
-      }
-      error_page   500 502 503 504  /50x.html;
-      location = /50x.html {
-        root   /var/html/frontend/;
-      }
+    }
 
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
 }
