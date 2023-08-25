@@ -76,26 +76,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME', default='django'),
-        'USER': os.getenv('POSTGRES_USER', default='django'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='django'),
-        'HOST': os.getenv('DB_HOST', default='127.0.0.1'),
-        'PORT': int(os.getenv('DB_PORT', default=5432)),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+#         'NAME': os.getenv('DB_NAME', default='django'),
+#         'USER': os.getenv('POSTGRES_USER', default='django'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='django'),
+#         'HOST': os.getenv('DB_HOST', default='127.0.0.1'),
+#         'PORT': int(os.getenv('DB_PORT', default=5432)),
+#     }
+# }
 
 
 AUTH_USER_MODEL = 'users.User'

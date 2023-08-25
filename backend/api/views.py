@@ -18,6 +18,7 @@ from recipes.models import (Tag,
                             IngredientInRecipe,
                             Favorite,
                             Cart,)
+from users.serializers import SpecialRecipeSerializer
 
 
 class TagView(viewsets.ModelViewSet):
@@ -57,9 +58,7 @@ class RecipeView(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance,
                                          data=request.data,
                                          partial=False)
-
         serializer.is_valid(raise_exception=True)
-
         self.perform_update(serializer)
         return Response(serializer.data)
 
@@ -68,8 +67,32 @@ class RecipeView(viewsets.ModelViewSet):
                                          context={'request': request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        is_favorited = self.request.query_params.get('is_favorited')
+        is_in_shopping_cart = self.request.query_params.get(
+            'is_in_shopping_cart'
+        )
+
+        if is_favorited == '1' and self.request.user.is_authenticated:
+            queryset = queryset.filter(in_favorites__user=self.request.user)
+
+        if is_in_shopping_cart == '1' and self.request.user.is_authenticated:
+            queryset = queryset.filter(in_cart__user=self.request.user)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+
 
 
 class FavoriteView(APIView):
