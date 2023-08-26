@@ -75,6 +75,7 @@ class RecipeView(viewsets.ModelViewSet):
             'is_in_shopping_cart'
         )
         tags_slugs = self.request.query_params.getlist('tags')
+        author = self.request.query_params.get('author')
 
         if is_favorited == '1' and self.request.user.is_authenticated:
             queryset = queryset.filter(
@@ -88,6 +89,14 @@ class RecipeView(viewsets.ModelViewSet):
 
         if tags_slugs:
             queryset = queryset.filter(tags__slug__in=tags_slugs).distinct()
+
+        if author == 'me':
+            author = self.request.user.id
+        elif author is str:
+            author = int(author)
+
+        if author:
+            queryset = queryset.filter(author__id=author).distinct()
 
         page = self.paginate_queryset(queryset)
         if page is not None:
