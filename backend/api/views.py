@@ -74,12 +74,20 @@ class RecipeView(viewsets.ModelViewSet):
         is_in_shopping_cart = self.request.query_params.get(
             'is_in_shopping_cart'
         )
+        tags_slugs = self.request.query_params.getlist('tags')
 
         if is_favorited == '1' and self.request.user.is_authenticated:
-            queryset = queryset.filter(in_favorites__user=self.request.user)
+            queryset = queryset.filter(
+                in_favorites__user=self.request.user
+            ).distinct()
 
         if is_in_shopping_cart == '1' and self.request.user.is_authenticated:
-            queryset = queryset.filter(in_cart__user=self.request.user)
+            queryset = queryset.filter(
+                in_cart__user=self.request.user
+            ).distinct()
+
+        if tags_slugs:
+            queryset = queryset.filter(tags__slug__in=tags_slugs).distinct()
 
         page = self.paginate_queryset(queryset)
         if page is not None:
