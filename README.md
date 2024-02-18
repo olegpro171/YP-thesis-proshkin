@@ -1,51 +1,51 @@
-# FoodGram Project
+# FoodGram Project (Yandex Practicum thesis)
 
-## Информация о проекте
-Проект доступен по адресу: https://foodgram53.servebeer.com/
+## Description
 
-- Информация для отладки и проверки (раздеел будет удален):
+The FoodGram project is an online platform for creating, searching, and exchanging culinary recipes. Users can register, create their own recipes, add them to favorites and shopping lists, as well as share their culinary masterpieces with other participants.
 
-    - Суперпользователь:
-        - Username: `1`
-        - E-mail: `aa@aa.aa`
-        - Password: `1`
+## Technologies Used
 
+The FoodGram project utilizes the following technologies:
 
-## Описание
+- Django: web framework for backend development
+- Django REST framework: tool for creating APIs
+- PostgreSQL: database for data storage
+- Docker: application containerization
+- Nginx: web server for handling HTTP requests
+- HTML/CSS/JavaScript: frontend application
 
-Проект FoodGram - это онлайн платформа для создания, поиска и обмена кулинарными рецептами. Пользователи могут регистрироваться, создавать собственные рецепты, добавлять их в избранное и список покупок, а также делиться своими кулинарными шедеврами с другими участниками.
+## Running Instructions
 
-## Инструкция по запуску
+To run the project on your local machine, follow these steps:
 
-Для запуска проекта на вашей локальной машине, выполните следующие шаги:
-
-1. Установить Docker: https://docs.docker.com/engine/install/
+1. Install Docker: [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
     
-    a. Для работы проекта на удаленном сервере также понадобится учетная запись Docker
+    a. A Docker account will also be required for project operation on a remote server.
 
-2. Клонировать репозиторий проекта
+2. Clone the project repository:
 ```
 git clone https://github.com/olegpro171/foodgram-project-react
 cd foodgram-project-react/infra
 ```
 
-3. Запустить compose
+3. Run compose:
 ```
 sudo docker compose up --build
 ```
 
-Также предусмотрен запуск на удаленном сервере (опционально):
+Remote server deployment is also provided (optional):
 
-4. Сбилдить и загрузить на Dockerhub образы `frontend` и `backend`:
+4. Build and upload `frontend` and `backend` images to Dockerhub:
 
 ```
 sudo docker login
 
-sudo docker build -t <имя пользователя>/foodgram_frontend ../frontend
-sudo docker build -t <имя пользователя>/foodgram_backend ../backend
+sudo docker build -t <username>/foodgram_frontend ../frontend
+sudo docker build -t <username>/foodgram_backend ../backend
 ```
 
-5. Настроить файл `docker-compose-production.yml`: задать имя образов backend и frontend. Пример:
+5. Configure the `docker-compose-production.yml` file: specify the backend and frontend image names. Example:
 
 ```
 backend:
@@ -54,22 +54,21 @@ backend:
     ...
 ```
 
-6. Создать файл `.env` и настроить его в соответствии с `.env.example`
+6. Create a `.env` file and configure it according to `.env.example`.
 
-7. Копировать удобным способом файлы `docker-compose-production.yml`, `nginx.conf` и `.env` на удаленный сервер в директорию `<директория проета>/infra/`
+7. Copy files `docker-compose-production.yml`, `nginx.conf`, and `.env` to the remote server directory `<project directory>/infra/` using a convenient method.
 
-8. Выполнить команду на удаленном сервере:
+8. Execute the command on the remote server:
 
 ```
-docker compose -f </путь/до/docker-compose-production.yml> up -d
+docker compose -f </path/to/docker-compose-production.yml> up -d
 ```
 
-## Примеры запросов
+## Request Examples
 
+Examples of requests that can be executed in the FoodGram application:
 
-Примеры запросов, которые можно выполнить в приложении FoodGram:
-
-Регистрация нового пользователя:
+Registering a new user:
 
 
     POST /api/auth/users/
@@ -82,7 +81,7 @@ docker compose -f </путь/до/docker-compose-production.yml> up -d
     }
 
 
-Авторизация пользователя:
+User authentication:
 
 
     POST /api/auth/token/login/
@@ -93,7 +92,7 @@ docker compose -f </путь/до/docker-compose-production.yml> up -d
         "password": "securepassword"
     }
 
-Создание нового рецепта:
+Creating a new recipe:
 
     POST /api/recipes/
     Authorization: Token yourAuthToken
@@ -110,19 +109,9 @@ docker compose -f </путь/до/docker-compose-production.yml> up -d
         ]
     }   
 
-## Использованные технологии
 
-Проект FoodGram использует следующие технологии:
+## Author
 
-- Django: веб-фреймворк для разработки бэкенда
-- Django REST framework: инструмент для создания API
-- PostgreSQL: база данных для хранения данных
-- Docker: контейнеризация приложения
-- Nginx: веб-сервер для обработки HTTP-запросов
-- HTML/CSS/JavaScript: фронтенд приложения
+The FoodGram project was developed as part of the Yandex.Practicum program. Developer: Oleg Proshkin.
 
-## Автор
-
-Проект FoodGram разработан в рамках программы Яндекс.Практикум. Разботчик: Олег Прошкин. 
-
-Вы можете связаться со мной по адресу oleg.pro171@gmail.com.
+You can contact me at oleg.pro171@gmail.com.
